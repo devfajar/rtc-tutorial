@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/devfajar/rtc/internal/handlers"
+	w "github.com/devfajar/rtc/pkg/webrtc"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -43,7 +44,25 @@ func Run() error {
 	app.Get("/room/:uuid/chat/websocket", websocket.New(handlers.RoomChatWebsocket))
 	app.Get("/room/uuid/viewer/websocket", websocket.New(handlers.RoomViewerWebsocket))
 	app.Get("/stream/:ssuid", handlers.Stream)
-	app.Get("/stream/:ssuid/websocket")
-	app.Get("/stream/ssuid/chat/websocket")
+	app.Get("/stream/:ssuid/websocket", websocket.New(handlers.StreamWebsocket, websocket.Config{HandshakeTimeout: 10*time.Second}))
+	app.Get("/stream/ssuid/chat/websocket", websocket.New(handlers.StreamChat))
 	app.Get("/stream/:ssuid/viewer/websocket")
+	app.Static("/", "./assets/")
+
+
+	w.Rooms = make(map[string] *w.Room)
+	w.Streams = make(map[string] *w.Room)
+	go dispatchKeyFrames()
+	if *cert != "" {
+		return app.ListenTLS(*addr, *cert, *key)
+	}
+	return app.Listen(*addr)
+}
+
+func dispatchKeyFrames(){
+	for range time.NewTicker(time.Second * 3).c{
+		for _, room := range w.Rooms{
+			room.Peers.DispatchKeyFrame()
+		}
+	}
 }
