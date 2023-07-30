@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/andybalholm/brotli v1.0.5 // indirect
-	github.com/fasthttp/websocket v1.5.3 // indirect
+	github.com/fasthttp/websocket v1.5.4 // indirect
 	github.com/gofiber/fiber/v2 v2.47.0 // indirect
 	github.com/gofiber/template v1.8.2 // indirect
 	github.com/gofiber/template/html/v2 v2.0.4 // indirect
